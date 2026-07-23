@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading Buttons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#f4f5f9;
+    --surface:#ffffff;
+    --ink:#1c1e2a;
+    --muted:#6b7185;
+    --faint:#9aa0b4;
+    --border:#e6e8f0;
+    --border-strong:#d8dbe8;
+    --brand:#3b4fe4;
+    --brand-dark:#2c3bc0;
+    --brand-tint:#eef0fe;
+    --font-display:"Space Grotesk", system-ui, sans-serif;
+    --font-body:"Inter", system-ui, sans-serif;
+    --font-mono:"JetBrains Mono", ui-monospace, monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{
+    font-family:var(--font-body); background:var(--canvas); color:var(--ink);
+    -webkit-font-smoothing:antialiased; padding:48px 24px 80px;
+  }
+  .wrap{max-width:860px; margin:0 auto}
+
+  header{margin-bottom:8px}
+  header h1{font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-.02em}
+  header p{color:var(--muted); font-size:14px; margin-top:6px}
+  .tip{font-size:12.5px; color:var(--faint); margin-top:4px}
+
+  .group{margin-top:40px}
+  .group-label{
+    display:flex; align-items:center; gap:12px; margin-bottom:20px;
+  }
+  .group-label .n{
+    font-family:var(--font-mono); font-size:12px; color:var(--brand);
+    background:var(--brand-tint); padding:3px 9px; border-radius:6px;
+  }
+  .group-label h2{font-family:var(--font-display); font-size:16px; font-weight:600; letter-spacing:-.01em}
+  .group-label .line{flex:1; height:1px; background:var(--border)}
+
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:16px;
+  }
+  .cell{
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:22px 16px 16px; display:flex; flex-direction:column; align-items:center; gap:14px;
+    box-shadow:0 1px 2px rgba(28,30,42,.04);
+  }
+  .cell .caption{font-size:11.5px; color:var(--faint); font-weight:500; text-align:center}
+
+  /* ---------- base button ---------- */
+  .btn{
+    position:relative;
+    min-width:132px; height:44px; padding:0 20px;
+    border:none; border-radius:11px;
+    background:var(--brand); color:#fff;
+    font-family:var(--font-body); font-size:14px; font-weight:600;
+    display:inline-flex; align-items:center; justify-content:center;
+    cursor:pointer; overflow:hidden;
+    box-shadow:0 6px 16px -8px rgba(59,79,228,.7);
+    transition:background .15s, transform .1s;
+  }
+  .btn:hover{background:var(--brand-dark)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:2px solid var(--brand); outline-offset:3px}
+  .btn .idle{display:inline-flex; align-items:center; gap:8px}
+  .btn .load{display:none; align-items:center; justify-content:center; gap:8px}
+  .btn.loading{cursor:default; background:var(--brand-dark)}
+  .btn.loading .idle{display:none}
+  .btn.loading .load{display:inline-flex}
+
+  /* ============================================================
+     SPINNERS  (1–5)
+  ============================================================ */
+
+  /* 1 · Rotating ring */
+  .sp-ring{
+    width:18px; height:18px; border-radius:50%;
+    border:2.5px solid rgba(255,255,255,.35);
+    border-top-color:#fff;
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* 2 · Bouncing dots */
+  .sp-dots{display:inline-flex; gap:5px}
+  .sp-dots span{
+    width:7px; height:7px; border-radius:50%; background:#fff;
+    animation:bounce 1s ease-in-out infinite;
+  }
+  .sp-dots span:nth-child(2){animation-delay:.15s}
+  .sp-dots span:nth-child(3){animation-delay:.3s}
+  @keyframes bounce{
+    0%,80%,100%{transform:translateY(0); opacity:.5}
+    40%{transform:translateY(-7px); opacity:1}
+  }
+
+  /* 3 · Equalizer bars */
+  .sp-bars{display:inline-flex; align-items:center; gap:3px; height:18px}
+  .sp-bars span{
+    width:3px; height:100%; border-radius:2px; background:#fff;
+    animation:eq 1s ease-in-out infinite;
+  }
+  .sp-bars span:nth-child(2){animation-delay:.2s}
+  .sp-bars span:nth-child(3){animation-delay:.4s}
+  .sp-bars span:nth-child(4){animation-delay:.6s}
+  @keyframes eq{
+    0%,100%{transform:scaleY(.35)}
+    50%{transform:scaleY(1)}
+  }
+
+  /* 4 · Conic / segment sweep */
+  .sp-conic{
+    width:18px; height:18px; border-radius:50%;
+    background:conic-gradient(from 0deg, transparent 0%, #fff 90%);
+    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+            mask:radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+    animation:spin .8s linear infinite;
+  }
+
+  /* 5 · Orbiting dots */
+  .sp-orbit{position:relative; width:20px; height:20px; animation:spin 1.1s linear infinite}
+  .sp-orbit span{
+    position:absolute; width:6px; height:6px; border-radius:50%; background:#fff;
+    top:calc(50% - 3px);
+  }
+  .sp-orbit span:nth-child(1){left:0; animation:fade 1.1s ease-in-out infinite}
+  .sp-orbit span:nth-child(2){right:0; animation:fade 1.1s ease-in-out infinite .55s}
+  @keyframes fade{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ============================================================
+     LOADING TEXT  (6–10)
+  ============================================================ */
+
+  /* 6 · Animated ellipsis */
+  .tx-ellipsis .ell{display:inline-block; width:14px; text-align:left}
+  .tx-ellipsis .ell::after{content:""; animation:ellipsis 1.4s steps(4,end) infinite}
+  @keyframes ellipsis{
+    0%{content:""} 25%{content:"."} 50%{content:".."} 75%{content:"..."} 100%{content:""}
+  }
+
+  /* 7 · Shimmer sweep */
+  .tx-shimmer .word{
+    background:linear-gradient(90deg, rgba(255,255,255,.45) 25%, #fff 50%, rgba(255,255,255,.45) 75%);
+    background-size:200% 100%;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shimmer 1.4s linear infinite;
+  }
+  @keyframes shimmer{to{background-position:-200% 0}}
+
+  /* 8 · Percentage counter (JS-driven) */
+  .tx-percent .pct{font-variant-numeric:tabular-nums; min-width:38px; text-align:left}
+
+  /* 9 · Cycling status words (JS-driven) */
+  .tx-cycle .cyc{display:inline-block; animation:cycfade .3s ease}
+  @keyframes cycfade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  /* 10 · Letter wave */
+  .tx-wave .word{display:inline-flex}
+  .tx-wave .word span{
+    display:inline-block; animation:wave 1.2s ease-in-out infinite;
+  }
+  @keyframes wave{
+    0%,60%,100%{transform:translateY(0); opacity:.55}
+    30%{transform:translateY(-5px); opacity:1}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Loading buttons</h1>
+    <p>Ten animated button states — five spinners and five loading-text styles.</p>
+    <p class="tip">Click any button to play its animation. It resets on its own.</p>
+  </header>
+
+  <!-- ============ SPINNERS ============ -->
+  <section class="group">
+    <div class="group-label">
+      <span class="n">01–05</span>
+      <h2>Spinners</h2>
+      <span class="line"></span>
+    </div>
+    <div class="grid">
+
+      <div class="cell">
+        <button class="btn" data-anim="spinner" onclick="run(this)">
+          <span class="idle">Save changes</span>
+          <span class="load"><span class="sp-ring"></span></span>
+        </button>
+        <span class="caption">Rotating ring</span>
+      </div>
+
+      <div class="cell">
+        <button class="btn" data-anim="spinner" onclick="run(this)">
+          <span class="idle">Upload file</span>
+          <span class="load"><span class="sp-dots"><span></span><span></span><span></span></span></span>
+        </button>
+        <span class="caption">Bouncing dots</span>
+      </div>
+
+      <div class="cell">
+        <button class="btn" data-anim="spinner" onclick="run(this)">
+          <span class="idle">Sync now</span>
+          <span class="load"><span class="sp-bars"><span></span><span></span><span></span><span></span></span></span>
+        </button>
+        <span class="caption">Equalizer bars</span>
+      </div>
+
+      <div class="cell">
+        <button class="btn" data-anim="spinner" onclick="run(this)">
+          <span class="idle">Submit</span>
+          <span class="load"><span class="sp-conic"></span></span>
+        </button>
+        <span class="caption">Conic sweep</span>
+      </div>
+
+      <div class="cell">
+        <button class="btn" data-anim="spinner" onclick="run(this)">
+          <span class="idle">Connect</span>
+          <span class="load"><span class="sp-orbit"><span></span><span></span></span></span>
+        </button>
+        <span class="caption">Orbiting dots</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ LOADING TEXT ============ -->
+  <section class="group">
+    <div class="group-label">
+      <span class="n">06–10</span>
+      <h2>Loading text</h2>
+      <span class="line"></span>
+    </div>
+    <div class="grid">
+
+      <div class="cell">
+        <button class="btn tx-ellipsis" data-anim="spinner" onclick="run(this)">
+          <span class="idle">Send</span>
+          <span class="load">Sending<span class="ell"></span></span>
+        </button>
+        <span class="caption">Animated ellipsis</span>
+      </div>
+
+      <div class="cell">
+        <button class="btn tx-shimmer" data-anim="spinner" onclick="run(this)">
+          <span class="idle">Publish</span>
+          <span class="load"><span class="word">Publishing…</span></span>
+        </button>
+        <span class="caption">Shimmer sweep</span>
+      </div>
+
+      <div class="cell">
+        <button class="btn tx-percent" data-anim="percent" onclick="run(this)">
+          <span class="idle">Download</span>
+          <span class="load"><span class="pct">0%</span></span>
+        </button>
+        <span class="caption">Percentage counter</span>
+      </div>
+
+      <div class="cell">
+        <button class="btn tx-cycle" data-anim="cycle" onclick="run(this)">
+          <span class="idle">Check out</span>
+          <span class="load"><span class="cyc">Processing</span></span>
+        </button>
+        <span class="caption">Cycling status</span>
+      </div>
+
+      <div class="cell">
+        <button class="btn tx-wave" data-anim="wave" onclick="run(this)">
+          <span class="idle">Analyze</span>
+          <span class="load"><span class="word" data-word="Analyzing…"></span></span>
+        </button>
+        <span class="caption">Letter wave</span>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<script>
+  // build letter-wave spans with staggered delays
+  document.querySelectorAll(".tx-wave .word").forEach(w=>{
+    const text = w.dataset.word;
+    w.innerHTML = [...text].map((ch,i)=>
+      `<span style="animation-delay:${i*0.06}s">${ch===" "?"&nbsp;":ch}</span>`
+    ).join("");
+  });
+
+  const CYCLE_WORDS = ["Processing", "Verifying", "Charging card", "Almost there"];
+
+  function run(btn){
+    if(btn.classList.contains("loading")) return;
+    btn.classList.add("loading");
+    const anim = btn.dataset.anim;
+
+    if(anim === "percent"){
+      const el = btn.querySelector(".pct");
+      let p = 0;
+      const iv = setInterval(()=>{
+        p += Math.floor(Math.random()*9)+3;
+        if(p >= 100){ p = 100; clearInterval(iv); setTimeout(()=>reset(btn), 500); }
+        el.textContent = p + "%";
+      }, 160);
+      btn._iv = iv;
+    }
+    else if(anim === "cycle"){
+      const el = btn.querySelector(".cyc");
+      let i = 0;
+      const iv = setInterval(()=>{
+        i++;
+        if(i >= CYCLE_WORDS.length){ clearInterval(iv); reset(btn); return; }
+        el.textContent = CYCLE_WORDS[i];
+        el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+      }, 900);
+      btn._iv = iv;
+    }
+    else {
+      // spinner / css-text animations — run for a fixed spell
+      setTimeout(()=>reset(btn), 2600);
+    }
+  }
+
+  function reset(btn){
+    btn.classList.remove("loading");
+    if(btn._iv) clearInterval(btn._iv);
+    const pct = btn.querySelector(".pct"); if(pct) pct.textContent = "0%";
+    const cyc = btn.querySelector(".cyc"); if(cyc) cyc.textContent = CYCLE_WORDS[0];
+  }
+</script>
+</body>
+</html>
